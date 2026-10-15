@@ -32,27 +32,21 @@ export function LoginForm({ next }: { next?: string }) {
           autoFocus
         />
       </Field>
-      <Field
-        label={
-          <span className="flex w-full items-center justify-between">
-            {t.auth.password}
-            <Link href="/forgot-password" className="text-sm font-normal text-muted hover:text-foreground">
-              {t.auth.forgot}
-            </Link>
-          </span>
-        }
-        htmlFor="password"
-        error={errors.password}
-      >
-        <PasswordInput
-          {...fieldAria("password", errors.password)}
-          name="password"
-          autoComplete="current-password"
-          required
-          showLabel={t.auth.showPassword}
-          hideLabel={t.auth.hidePassword}
-        />
-      </Field>
+      <div className="flex flex-col gap-2">
+        <Field label={t.auth.password} htmlFor="password" error={errors.password}>
+          <PasswordInput
+            {...fieldAria("password", errors.password)}
+            name="password"
+            autoComplete="current-password"
+            required
+            showLabel={t.auth.showPassword}
+            hideLabel={t.auth.hidePassword}
+          />
+        </Field>
+        <Link href="/forgot-password" className="self-end text-sm text-muted hover:text-foreground">
+          {t.auth.forgot}
+        </Link>
+      </div>
       <SubmitButton size="lg" className="mt-1 w-full" pendingText={t.common.loading}>
         {t.auth.loginSubmit}
       </SubmitButton>

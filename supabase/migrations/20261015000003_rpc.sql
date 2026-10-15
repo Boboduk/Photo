@@ -419,6 +419,7 @@ $$;
 -- Лайки и избранное
 -- -----------------------------------------------------------------------------
 
+-- user_id не передаётся явно: колонка закрыта для записи и заполняется auth.uid() по умолчанию.
 create or replace function public.toggle_like(p_item uuid)
 returns jsonb
 language plpgsql
@@ -436,7 +437,7 @@ begin
   if found then
     v_liked := false;
   else
-    insert into public.likes (user_id, item_id) values ((select auth.uid()), p_item);
+    insert into public.likes (item_id) values (p_item);
     v_liked := true;
   end if;
 
@@ -464,11 +465,11 @@ begin
   if p_item is not null then
     delete from public.favorites where user_id = (select auth.uid()) and item_id = p_item;
     if found then return false; end if;
-    insert into public.favorites (user_id, item_id) values ((select auth.uid()), p_item);
+    insert into public.favorites (item_id) values (p_item);
   else
     delete from public.favorites where user_id = (select auth.uid()) and profile_id = p_profile;
     if found then return false; end if;
-    insert into public.favorites (user_id, profile_id) values ((select auth.uid()), p_profile);
+    insert into public.favorites (profile_id) values (p_profile);
   end if;
   return true;
 end;
