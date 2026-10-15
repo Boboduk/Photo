@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
+import { parseSupabaseUrl } from "./src/lib/supabase-url";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
-  : null;
+const supabaseUrl = parseSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 // Локальный Supabase (supabase start) отдаёт файлы с 127.0.0.1 — оптимизатору изображений
 // Next.js нужно явно разрешить локальные адреса. Для облачного проекта это не требуется.
@@ -27,7 +26,7 @@ const nextConfig: NextConfig = {
       ...(supabaseUrl
         ? [
             {
-              protocol: supabaseUrl.protocol.replace(":", "") as "http" | "https",
+              protocol: supabaseUrl.protocol === "https:" ? ("https" as const) : ("http" as const),
               hostname: supabaseUrl.hostname,
               port: supabaseUrl.port,
               pathname: "/storage/v1/object/public/**",
