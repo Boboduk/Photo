@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { AppShell } from "@/components/layout/app-shell";
+import { getT } from "@/i18n/server";
 import { requireModerator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Администрирование",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.admin.title, robots: { index: false, follow: false } };
+}
 
 /**
  * Админка доступна только модераторам и администраторам. Проверка выполняется

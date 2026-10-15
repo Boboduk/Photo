@@ -20,10 +20,10 @@ export function SmartImage({ src, alt, className, ...props }: Omit<ImageProps, "
         aria-label={alt}
         className={cn(
           "flex items-center justify-center bg-gradient-to-br from-surface to-surface-strong text-subtle",
-          props.fill ? "absolute inset-0" : "",
+          props.fill ? "absolute inset-0" : "w-full",
           className,
         )}
-        style={props.fill ? undefined : { width: Number(props.width) || undefined, aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : undefined }}
+        style={props.fill ? undefined : { aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : undefined }}
       >
         <ImageOffIcon className="size-6" />
       </span>

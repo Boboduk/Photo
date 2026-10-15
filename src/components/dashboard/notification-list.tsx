@@ -114,7 +114,7 @@ export function NotificationList({ userId, items, compact = false }: { userId: s
                 {preview ? <p className="mt-1 line-clamp-1 text-sm text-muted">{preview}</p> : null}
                 <p className="mt-1 text-xs text-subtle">{formatRelative(locale, n.created_at)}</p>
               </div>
-              {!n.read_at ? <span className="mt-2 size-2 shrink-0 rounded-full bg-brand" aria-label="new" /> : null}
+              {!n.read_at ? <span className="mt-2 size-2 shrink-0 rounded-full bg-brand" role="status" aria-label={t.notifications.unread} /> : null}
               {!compact ? (
                 <Button
                   variant="ghost"

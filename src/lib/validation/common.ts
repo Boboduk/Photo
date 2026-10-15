@@ -64,7 +64,9 @@ export const uuid = z.uuid({ error: "invalidValue" satisfies ValidationKey });
 
 /** Чекбокс из FormData: "on" или отсутствие поля. */
 export const checkbox = z
-  .union([z.literal("on"), z.literal("true"), z.literal(""), z.undefined(), z.null()])
+  .union([z.literal("on"), z.literal("true"), z.literal("")])
+  .nullable()
+  .optional()
   .transform((v) => v === "on" || v === "true");
 
 export function translateIssues(t: Dictionary, error: z.ZodError): Record<string, string[]> {

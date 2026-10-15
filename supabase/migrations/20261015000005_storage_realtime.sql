@@ -17,11 +17,16 @@ on conflict (id) do update
       file_size_limit = excluded.file_size_limit,
       allowed_mime_types = excluded.allowed_mime_types;
 
-create policy "frame storage: read own files"
+-- Чтение через API нужно для списка и удаления файлов (Storage сначала выбирает
+-- объекты с учётом RLS). Публичные ссылки на изображения работают без этой политики.
+create policy "frame storage: read own files or moderate"
   on storage.objects for select to authenticated
   using (
     bucket_id in ('avatars', 'media')
-    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and (
+      (storage.foldername(name))[1] = (select auth.uid())::text
+      or public.is_moderator()
+    )
   );
 
 create policy "frame storage: upload to own folder"

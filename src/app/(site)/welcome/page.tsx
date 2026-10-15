@@ -8,7 +8,10 @@ import { requireUser } from "@/lib/auth";
 import { categoryName, getCategories } from "@/lib/categories";
 import { firstParam, safeNextPath } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Добро пожаловать" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: format(t.welcome.title, { brand: brand.name }) };
+}
 
 /** Первый вход: предлагаем загрузить фото и коротко заполнить профиль. */
 export default async function WelcomePage(props: PageProps<"/welcome">) {

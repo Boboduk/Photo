@@ -319,7 +319,7 @@ export function WorkEditor({
           <Input {...fieldAria("shot_on", errors.shot_on)} type="date" value={shotOn} onChange={(e) => setShotOn(e.target.value)} />
         </Field>
         <Field label={t.dashboardPortfolio.tags} htmlFor="tags" hint={t.dashboardPortfolio.tagsHint} error={errors.tags ?? errors["tags.0"]} className="sm:col-span-2">
-          <Input {...fieldAria("tags", errors.tags, true)} value={tags} onChange={(e) => setTags(e.target.value)} maxLength={400} placeholder="портрет, студия, осень" />
+          <Input {...fieldAria("tags", errors.tags, true)} value={tags} onChange={(e) => setTags(e.target.value)} maxLength={400} placeholder={t.dashboardPortfolio.tagsPlaceholder} />
         </Field>
       </div>
 

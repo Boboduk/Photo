@@ -131,15 +131,19 @@ export default async function AdminUsersPage(props: PageProps<"/admin/users">) {
       )}
 
       {pages > 1 ? (
-        <nav className="flex items-center justify-center gap-2" aria-label="pagination">
+        <nav className="flex items-center justify-center gap-2" aria-label={t.common.pagination}>
           <Button asChild variant="outline" size="sm" className={page <= 1 ? "pointer-events-none opacity-40" : ""}>
-            <Link href={link({ page: String(page - 1) })}>←</Link>
+            <Link href={link({ page: String(page - 1) })} aria-label={t.common.previousPage}>
+              ←
+            </Link>
           </Button>
           <span className="text-sm text-muted tabular-nums">
             {page} / {pages}
           </span>
           <Button asChild variant="outline" size="sm" className={page >= pages ? "pointer-events-none opacity-40" : ""}>
-            <Link href={link({ page: String(page + 1) })}>→</Link>
+            <Link href={link({ page: String(page + 1) })} aria-label={t.common.nextPage}>
+              →
+            </Link>
           </Button>
         </nav>
       ) : null}

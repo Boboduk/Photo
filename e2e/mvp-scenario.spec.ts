@@ -191,9 +191,11 @@ test.describe.serial("Сценарий MVP", () => {
   test("9. Личный кабинет: проекты, сообщения, сохранённые работы", async () => {
     const { page } = md;
     await page.goto(workUrl);
-    await page.getByRole("button", { name: "Сохранить в избранное" }).click();
+    // Ждём ответа сервера, а не только оптимистичного обновления кнопки.
+    const serverAction = () => page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/portfolio/"));
+    await Promise.all([serverAction(), page.getByRole("button", { name: "Сохранить в избранное" }).click()]);
     await expect(page.getByRole("button", { name: "Убрать из избранного" })).toBeVisible();
-    await page.getByRole("button", { name: "Нравится" }).click();
+    await Promise.all([serverAction(), page.getByRole("button", { name: "Нравится" }).click()]);
     await expect(page.getByRole("button", { name: "Убрать отметку «Нравится»" })).toBeVisible();
 
     await page.goto("/dashboard/favorites");

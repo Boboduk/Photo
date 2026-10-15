@@ -43,6 +43,9 @@ export const ru = {
     copyLink: "Скопировать ссылку",
     linkCopied: "Ссылка скопирована",
     moreActions: "Ещё действия",
+    pagination: "Страницы",
+    previousPage: "Предыдущая страница",
+    nextPage: "Следующая страница",
   },
 
   nav: {
@@ -539,6 +542,7 @@ export const ru = {
     shotOn: "Дата съёмки",
     tags: "Теги",
     tagsHint: "Через запятую, до 10 тегов",
+    tagsPlaceholder: "портрет, студия, осень",
     credits: "Участники съёмки",
     creditsHint: "Отметьте фотографа, модель, визажиста или стилиста. Отмеченные пользователи получат уведомление.",
     addCredit: "Добавить участника",
@@ -683,6 +687,7 @@ export const ru = {
     likeMany: "{actor} и ещё {others} оценили вашу работу «{item}»",
     mention: "{actor} отметил(а) вас в работе «{item}»",
     viewAll: "Все уведомления",
+    unread: "Не прочитано",
   },
 
   settings: {

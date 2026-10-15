@@ -146,6 +146,35 @@ test.describe.serial("Права доступа (RLS)", () => {
     expect(banError?.code).toBe("42501");
   });
 
+  test("модератор удаляет нарушающий контент вместе с файлами", async () => {
+    const path = `${alice.id}/portfolio/${runId}-violation.jpg`;
+    const upload = await alice.client.storage
+      .from("media")
+      .upload(path, readFileSync(fixture("portrait-1.jpg")), { contentType: "image/jpeg" });
+    expect(upload.error).toBeNull();
+    const { data: item } = await alice.client.from("portfolio_items").insert({ title: "Нарушение" }).select("id").single();
+    const url = alice.client.storage.from("media").getPublicUrl(path).data.publicUrl;
+    const { error: imageError } = await alice.client
+      .from("portfolio_images")
+      .insert({ item_id: item!.id, storage_path: path, url, width: 1200, height: 1500 });
+    expect(imageError).toBeNull();
+    // Чужой файл в свою работу подставить нельзя
+    const { error: foreignImage } = await bob.client
+      .from("portfolio_images")
+      .insert({ item_id: item!.id, storage_path: path, url, width: 1, height: 1 });
+    expect(foreignImage).not.toBeNull();
+
+    const moderator = await createUser(`sm_${runId}`);
+    await serviceClient().from("profiles").update({ role: "moderator" }).eq("id", moderator.id);
+    const { data: paths, error } = await moderator.client.rpc("admin_delete_content", { p_type: "portfolio_item", p_id: item!.id });
+    expect(error).toBeNull();
+    expect(paths).toEqual([path]);
+    const removed = await moderator.client.storage.from("media").remove(paths as string[]);
+    expect(removed.error).toBeNull();
+    const left = await serviceClient().storage.from("media").list(`${alice.id}/portfolio`);
+    expect((left.data ?? []).some((f) => path.endsWith(f.name))).toBe(false);
+  });
+
   test("блокировка запрещает переписку в обе стороны", async () => {
     const { error } = await bob.client.from("user_blocks").insert({ blocked_id: alice.id });
     expect(error).toBeNull();
