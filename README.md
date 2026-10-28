@@ -85,13 +85,15 @@ scripts/make-admin.mjs    назначение администратора
 
 ## Быстрый старт (локально)
 
-Нужны **Node.js 20.9+** и **Docker** (для локального Supabase).
+Нужны **Node.js 20.9+** и **Docker**: локальный Supabase работает в контейнерах. На macOS подойдут Docker Desktop, OrbStack или Colima — приложение должно быть **запущено** до команды `supabase start` (иначе будет ошибка `failed to connect to the docker API ... docker.sock`).
 
 ```bash
 npm install
 npx supabase start          # поднимает Postgres, Auth, Storage, Realtime, почтовый ящик; применяет миграции и seed.sql
 cp .env.example .env.local
 ```
+
+Первый запуск скачивает образы Supabase и занимает несколько минут. Предупреждение CLI `config section [inbucket] is deprecated` можно не учитывать — секция поддерживается во всех версиях CLI 2.x.
 
 Заполните `.env.local` значениями из вывода `npx supabase start` (их же покажет `npx supabase status`):
 
@@ -104,6 +106,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```bash
 npm run dev                 # http://localhost:3000
 ```
+
+Если переменные не заданы, сайт покажет экран с инструкцией по настройке; если адрес Supabase указан с ошибкой — `npm run dev` сразу сообщит об этом.
+
+`npm audit` показывает уязвимости в `braces`/`micromatch` — это зависимости линтера (`eslint-config-next`), в сборку сайта они не попадают. Не запускайте `npm audit fix --force`: он откатит конфигурацию ESLint на Next.js 14.
 
 - Письма (подтверждение почты, восстановление пароля) приходят в локальный ящик: http://127.0.0.1:54324
 - Supabase Studio: http://127.0.0.1:54323
