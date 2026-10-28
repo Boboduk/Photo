@@ -29,8 +29,9 @@ export const authorizationServerIssuer = `${env.supabaseUrl.replace(/\/$/, "")}/
  * Приложение Claude открывает вход только по https, а локальный Supabase отдаёт его по http.
  * Если адрес задан, сервером авторизации для клиентов объявляется сам сайт: его метаданные —
  * документ Supabase с подменёнными issuer и authorization_endpoint. Токены по-прежнему выдаёт Supabase.
+ * В production не действует: там сайт и Supabase работают по https.
  */
-export const devAuthorizeUrl = process.env.MCP_OAUTH_AUTHORIZE_URL || null;
+export const devAuthorizeUrl = process.env.NODE_ENV === "production" ? null : process.env.MCP_OAUTH_AUTHORIZE_URL || null;
 
 /** Сервер авторизации, который видят MCP-клиенты. */
 export function advertisedIssuer(request: Request) {
