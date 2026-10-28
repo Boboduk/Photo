@@ -7,6 +7,7 @@ import {
   FolderOpenIcon,
   HeartIcon,
   MessageCircleIcon,
+  ShirtIcon,
   XIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -35,6 +36,7 @@ const ICONS = {
   project_status: FolderOpenIcon,
   like: HeartIcon,
   mention: AtSignIcon,
+  tryon_request: ShirtIcon,
 } as const;
 
 export function NotificationList({ userId, items, compact = false }: { userId: string; items: NotificationRow[]; compact?: boolean }) {

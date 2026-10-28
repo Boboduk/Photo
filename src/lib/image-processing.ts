@@ -14,8 +14,9 @@ export type ProcessedImage = {
  * Готовит изображение к загрузке: уменьшает до maxSize по длинной стороне,
  * учитывает ориентацию из EXIF и перекодирует в WebP (или JPEG).
  * Перекодирование заодно удаляет метаданные — в том числе геолокацию снимка.
+ * background заливает прозрачные области (иначе при перекодировании в JPEG они станут чёрными).
  */
-export async function prepareImage(file: File, maxSize = 2560, quality = 0.88): Promise<ProcessedImage> {
+export async function prepareImage(file: File, maxSize = 2560, quality = 0.88, background?: string): Promise<ProcessedImage> {
   if (!(ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
     throw new Error("wrong_type");
   }
@@ -31,6 +32,10 @@ export async function prepareImage(file: File, maxSize = 2560, quality = 0.88): 
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas_unavailable");
   ctx.imageSmoothingQuality = "high";
+  if (background) {
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, width, height);
+  }
   ctx.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
 

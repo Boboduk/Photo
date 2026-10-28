@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getT } from "@/i18n/server";
-import { PROFILE_TYPES } from "@/lib/constants";
 import { errorMessage, type ActionResult, type FormState } from "@/lib/errors";
 import { BUCKETS, isOwnStoragePath, publicStorageUrl, storagePathFromUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -160,11 +159,10 @@ export async function skipOnboardingAction(next: string) {
 
 export async function updateProfileTypeAction(profileType: string): Promise<ActionResult> {
   const t = await getT();
-  const parsed = z.enum(PROFILE_TYPES).safeParse(profileType);
-  if (!parsed.success) return { ok: false, error: t.validation.invalidValue };
+  if (!/^[a-z0-9-]{2,40}$/.test(profileType)) return { ok: false, error: t.validation.invalidValue };
   const { supabase, user } = await authed();
   if (!user) return { ok: false, error: t.errors.not_authenticated };
-  const { error } = await supabase.from("profiles").update({ profile_type: parsed.data }).eq("id", user.id);
+  const { error } = await supabase.from("profiles").update({ profile_type: profileType }).eq("id", user.id);
   if (error) return { ok: false, error: errorMessage(t, error) };
   revalidateProfile();
   return { ok: true, message: t.settings.profileTypeSaved };
@@ -246,7 +244,7 @@ export async function deleteAccountAction(confirmUsername: string): Promise<Acti
     return { ok: false, error: t.settings.deleteConfirmMismatch };
   }
 
-  for (const bucket of [BUCKETS.avatars, BUCKETS.media]) {
+  for (const bucket of [BUCKETS.avatars, BUCKETS.media, BUCKETS.tryon]) {
     const paths = await listAllFiles(supabase, bucket, user.id);
     for (let i = 0; i < paths.length; i += 100) {
       await supabase.storage.from(bucket).remove(paths.slice(i, i + 100));

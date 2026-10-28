@@ -4,6 +4,25 @@ const MAP: Record<string, string> = {
   ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
 };
 
+const QWERTY = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`";
+const JCUKEN = "йцукенгшщзхъфывапролджэячсмитьбюё";
+
+/**
+ * Текст, набранный в английской раскладке вместо русской: «vjcrdf» → «москва».
+ * Возвращает null, если в тексте нет латиницы или уже есть кириллица.
+ */
+export function fixKeyboardLayout(value: string): string | null {
+  if (!/[a-z]/i.test(value) || /[а-яё]/i.test(value)) return null;
+  return value
+    .toLowerCase()
+    .split("")
+    .map((char) => {
+      const index = QWERTY.indexOf(char);
+      return index === -1 ? char : JCUKEN[index];
+    })
+    .join("");
+}
+
 /** Предлагает адрес профиля по имени: «Анна Смирнова» → anna.smirnova */
 export function suggestUsername(name: string): string {
   const latin = name

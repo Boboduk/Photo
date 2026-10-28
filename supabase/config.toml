@@ -9,6 +9,9 @@ port = 54321
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
+# Внешний адрес API и издатель токенов Auth. Именно localhost, а не 127.0.0.1: MCP-клиенты
+# (Claude Code) открывают страницу входа по http только для localhost, остальное — только https.
+external_url = "http://localhost:54321"
 
 [db]
 port = 54322
@@ -43,6 +46,14 @@ enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
 enable_signup = true
 minimum_password_length = 8
+
+# OAuth 2.1 сервер Supabase Auth: через него ИИ-ассистенты (MCP-клиенты) входят
+# в аккаунт пользователя и получают обычный токен — права проверяет RLS.
+# Страница согласия — src/app/(site)/oauth/consent. В облаке: Authentication → OAuth Server.
+[auth.oauth_server]
+enabled = true
+authorization_url_path = "/oauth/consent"
+allow_dynamic_registration = true
 
 [auth.email]
 enable_signup = true

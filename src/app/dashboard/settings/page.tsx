@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/common/page-header";
+import { AssistantsSettings, type AssistantGrant } from "@/components/dashboard/assistants-settings";
 import {
   BlockedUsers,
   ContactsForm,
@@ -9,8 +10,11 @@ import {
   PasswordForm,
   ProfileTypeForm,
 } from "@/components/dashboard/settings-forms";
+import { siteUrl } from "@/config/site";
 import { getI18n } from "@/i18n/server";
 import { requireUser } from "@/lib/auth";
+import { MCP_PATH } from "@/lib/mcp/auth";
+import { getProfileTypes } from "@/lib/queries/profile-types";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,13 +26,25 @@ export default async function SettingsPage() {
   const user = await requireUser("/dashboard/settings");
   const { t } = await getI18n();
   const supabase = await createClient();
-  const [{ data: privateData }, { data: blocks }] = await Promise.all([
+  const [{ data: privateData }, { data: blocks }, profileTypes, grants] = await Promise.all([
     supabase.from("profile_private").select("*").eq("id", user.id).single(),
     supabase
       .from("user_blocks")
       .select("blocked:profiles!user_blocks_blocked_id_fkey(id, username, display_name, avatar_url)")
       .eq("blocker_id", user.id)
       .order("created_at", { ascending: false }),
+    getProfileTypes(),
+    // Приложения, которым пользователь выдал доступ через OAuth (MCP-клиенты).
+    supabase.auth.oauth.listGrants().then(({ data, error }): AssistantGrant[] | null =>
+      error || !data
+        ? null
+        : data.map((grant) => ({
+            clientId: grant.client.id,
+            name: grant.client.name || grant.client.uri || grant.client.id,
+            uri: grant.client.uri,
+            grantedAt: grant.granted_at,
+          })),
+    ),
   ]);
 
   const sections = [
@@ -46,7 +62,7 @@ export default async function SettingsPage() {
       id: "type",
       title: t.settings.profileType,
       description: t.settings.profileTypeHint,
-      content: <ProfileTypeForm value={user.profile.profile_type} />,
+      content: <ProfileTypeForm value={user.profile.profile_type} profileTypes={profileTypes.map((pt) => ({ slug: pt.slug, name: pt.name }))} />,
     },
     { id: "privacy", title: t.settings.privacy, content: privateData ? <ContactsForm data={privateData} /> : null },
     {
@@ -58,6 +74,12 @@ export default async function SettingsPage() {
       id: "blocked",
       title: t.settings.blocked,
       content: <BlockedUsers users={(blocks ?? []).flatMap((b) => (b.blocked ? [b.blocked] : []))} />,
+    },
+    {
+      id: "assistants",
+      title: t.assistants.title,
+      description: t.assistants.description,
+      content: <AssistantsSettings serverUrl={`${siteUrl}${MCP_PATH}`} grants={grants} />,
     },
     {
       id: "danger",

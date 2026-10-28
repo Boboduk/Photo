@@ -11,11 +11,13 @@ export function ProfileResults({
   query,
   initial,
   categoryLabels,
+  profileTypeLabels,
 }: {
   kind: "photographer" | "model";
   query: string;
   initial: Paged<ProfileCardData>;
   categoryLabels: Record<string, string>;
+  profileTypeLabels: Record<string, string>;
 }) {
   const t = useT();
   const locale = useLocale();
@@ -27,7 +29,7 @@ export function ProfileResults({
       render={(items) => (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((profile) => (
-            <ProfileCard key={profile.id} profile={profile} categoryLabels={categoryLabels} t={t} locale={locale} />
+            <ProfileCard key={profile.id} profile={profile} categoryLabels={categoryLabels} profileTypeLabels={profileTypeLabels} t={t} locale={locale} />
           ))}
         </div>
       )}

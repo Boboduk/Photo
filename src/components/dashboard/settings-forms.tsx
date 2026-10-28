@@ -1,6 +1,6 @@
 "use client";
 
-import { CameraIcon, SparklesIcon, UserIcon } from "lucide-react";
+import { CameraIcon, SparklesIcon, UserIcon, UserPenIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ import { Field, fieldAria } from "@/components/ui/field";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { format } from "@/i18n/format";
 import { useT } from "@/i18n/client";
-import { CONTACTS_VISIBILITY, PROFILE_TYPES, type ProfileType } from "@/lib/constants";
+import { CONTACTS_VISIBILITY } from "@/lib/constants";
 import { initialFormState, type FormState } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/database";
@@ -89,30 +89,39 @@ export function PasswordForm() {
   );
 }
 
-const TYPE_ICONS = { photographer: CameraIcon, model: UserIcon, both: SparklesIcon } as const;
+const TYPE_ICONS: Record<string, typeof CameraIcon> = {
+  photographer: CameraIcon,
+  model: UserIcon,
+  both: SparklesIcon,
+  videographer: CameraIcon,
+};
 
-export function ProfileTypeForm({ value }: { value: ProfileType }) {
+function getTypeIcon(slug: string) {
+  return TYPE_ICONS[slug] ?? UserPenIcon;
+}
+
+export function ProfileTypeForm({ value, profileTypes }: { value: string; profileTypes: { slug: string; name: string }[] }) {
   const t = useT();
   const router = useRouter();
   const [type, setType] = useState(value);
   const [pending, startTransition] = useTransition();
   return (
     <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label={t.settings.profileType}>
-      {PROFILE_TYPES.map((option) => {
-        const Icon = TYPE_ICONS[option];
+      {profileTypes.map((option) => {
+        const Icon = getTypeIcon(option.slug);
         return (
           <button
-            key={option}
+            key={option.slug}
             type="button"
             role="radio"
-            aria-checked={type === option}
+            aria-checked={type === option.slug}
             disabled={pending}
             onClick={() => {
-              if (option === type) return;
+              if (option.slug === type) return;
               const previous = type;
-              setType(option);
+              setType(option.slug);
               startTransition(async () => {
-                const result = await updateProfileTypeAction(option);
+                const result = await updateProfileTypeAction(option.slug);
                 if (result.ok) {
                   toast.success(result.message);
                   router.refresh();
@@ -124,11 +133,11 @@ export function ProfileTypeForm({ value }: { value: ProfileType }) {
             }}
             className={cn(
               "flex items-center gap-3 rounded-xl border p-4 text-left text-[15px] font-medium transition-colors",
-              type === option ? "border-foreground bg-surface" : "border-line-strong hover:border-foreground/50",
+              type === option.slug ? "border-foreground bg-surface" : "border-line-strong hover:border-foreground/50",
             )}
           >
             <Icon className="size-5" />
-            {t.enums.profileType[option]}
+            {option.name}
           </button>
         );
       })}

@@ -33,6 +33,21 @@ export async function getViewerProfileState(profileId: string, viewerId: string 
   return { favorite: Boolean(favorite.data), blocked: Boolean(block.data) };
 }
 
+/** Фото модели, открытое для примерки (видно только вошедшим пользователям — проверяет RLS). */
+export async function getSharedTryOnModelId(profileId: string, viewerId: string | undefined) {
+  if (!viewerId || viewerId === profileId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tryon_models")
+    .select("id")
+    .eq("owner_id", profileId)
+    .eq("is_shared", true)
+    .order("shared_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
 /** Опубликованные работы других авторов, где пользователь отмечен участником. */
 export async function getCreditedWorks(profileId: string) {
   const supabase = await createClient();

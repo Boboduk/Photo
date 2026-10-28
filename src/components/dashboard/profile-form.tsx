@@ -14,7 +14,6 @@ import {
   AVAILABILITY_STATUSES,
   COLLAB_FORMATS,
   EXPERIENCE_LEVELS,
-  PROFILE_TYPES,
   SOCIAL_NETWORKS,
   type ProfileType,
 } from "@/lib/constants";
@@ -22,15 +21,18 @@ import { initialFormState } from "@/lib/errors";
 import type { Tables } from "@/types/database";
 
 type Category = { slug: string; label: string; for_photographers: boolean; for_models: boolean };
+type ProfileTypeOption = { slug: string; name: string; shows_in_photographer_catalog: boolean; shows_in_model_catalog: boolean };
 
 export function ProfileForm({
   profile,
   privateData,
   categories,
+  profileTypes,
 }: {
   profile: Tables<"profiles">;
   privateData: Tables<"profile_private"> | null;
   categories: Category[];
+  profileTypes: ProfileTypeOption[];
 }) {
   const t = useT();
   const [state, action] = useActionState(updateProfileAction, initialFormState);
@@ -43,10 +45,11 @@ export function ProfileForm({
     if (state.ok && state.message) toast.success(state.message);
   }, [state]);
 
+  const currentProfileType = profileTypes.find((pt) => pt.slug === type);
   const photographerOptions = categories.filter((c) => c.for_photographers);
   const modelOptions = categories.filter((c) => c.for_models && !c.for_photographers);
-  const showPhotographer = type !== "model";
-  const showModel = type !== "photographer";
+  const showPhotographer = currentProfileType?.shows_in_photographer_catalog ?? type !== "model";
+  const showModel = currentProfileType?.shows_in_model_catalog ?? type !== "photographer";
   const toggleSpec = (value: string, checked: boolean) =>
     setSpecs((current) => (checked ? [...new Set([...current, value])] : current.filter((v) => v !== value)));
   // Направления модели, совпадающие со специализациями фотографа (Портрет, Fashion, Beauty), показываем один раз.
@@ -69,10 +72,10 @@ export function ProfileForm({
             <Input {...fieldAria("city", errors.city)} name="city" defaultValue={profile.city ?? ""} maxLength={80} placeholder={t.catalog.cityPlaceholder} />
           </Field>
           <Field label={t.profileForm.profileType} htmlFor="profile_type">
-            <NativeSelect id="profile_type" name="profile_type" value={type} onChange={(e) => setType(e.target.value as ProfileType)}>
-              {PROFILE_TYPES.map((value) => (
-                <option key={value} value={value}>
-                  {t.enums.profileType[value]}
+            <NativeSelect id="profile_type" name="profile_type" value={type} onChange={(e) => setType(e.target.value)}>
+              {profileTypes.map((pt) => (
+                <option key={pt.slug} value={pt.slug}>
+                  {pt.name}
                 </option>
               ))}
             </NativeSelect>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { format, plural } from "@/i18n/format";
 import { getI18n } from "@/i18n/server";
 import { categoryName, getCategories } from "@/lib/categories";
+import { getProfileTypes } from "@/lib/queries/profile-types";
 import { parseProfileFilters, searchProfiles } from "@/lib/queries/search";
 import { toQueryString } from "@/lib/utils";
 import { CatalogFilters } from "./catalog-filters";
@@ -17,13 +18,21 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export async function CatalogPage({ kind, searchParams }: { kind: "photographer" | "model"; searchParams: SearchParams }) {
   const { t, locale } = await getI18n();
   const filters = parseProfileFilters(kind, searchParams);
-  const [categories, results] = await Promise.all([getCategories(), searchProfiles(filters)]);
+  const [categories, profileTypes, results] = await Promise.all([
+    getCategories(),
+    getProfileTypes(),
+    searchProfiles(filters),
+  ]);
 
   const labels = Object.fromEntries(categories.map((c) => [c.slug, categoryName(c, locale)]));
+  const profileTypeLabels = Object.fromEntries(profileTypes.map((pt) => [pt.slug, pt.name]));
   const specializationOptions = categories
     .filter((c) => (kind === "photographer" ? c.for_photographers : c.for_models))
     .map((c) => ({ value: c.slug, label: labels[c.slug] }));
   const categoryOptions = categories.filter((c) => c.for_works).map((c) => ({ value: c.slug, label: labels[c.slug] }));
+  const typeOptions = profileTypes
+    .filter((pt) => (kind === "photographer" ? pt.shows_in_photographer_catalog : pt.shows_in_model_catalog))
+    .map((pt) => ({ value: pt.slug, label: pt.name }));
 
   const activeCount =
     (filters.city ? 1 : 0) +
@@ -49,6 +58,7 @@ export async function CatalogPage({ kind, searchParams }: { kind: "photographer"
         action={action}
         kind={kind}
         filters={filters}
+        typeOptions={typeOptions}
         specializationOptions={specializationOptions}
         categoryOptions={categoryOptions}
         activeCount={activeCount}
@@ -57,7 +67,7 @@ export async function CatalogPage({ kind, searchParams }: { kind: "photographer"
           {format(plural(locale, results.total, t.catalog.found), { count: results.total })}
         </p>
         {results.items.length > 0 ? (
-          <ProfileResults kind={kind} query={query} initial={results} categoryLabels={labels} />
+          <ProfileResults kind={kind} query={query} initial={results} categoryLabels={labels} profileTypeLabels={profileTypeLabels} />
         ) : (
           <EmptyState
             icon={SearchXIcon}

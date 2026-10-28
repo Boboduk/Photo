@@ -5,7 +5,6 @@ import { z } from "zod";
 import { siteUrl } from "@/config/site";
 import { getT } from "@/i18n/server";
 import type { FormState } from "@/lib/errors";
-import { PROFILE_TYPES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/utils";
 import {
@@ -66,7 +65,7 @@ const signUpSchema = z.object({
   username,
   email,
   password,
-  profile_type: z.enum(PROFILE_TYPES, { error: "required" }),
+  profile_type: z.string().trim().regex(/^[a-z0-9-]{2,40}$/, { error: "required" }),
   terms: checkbox.refine(Boolean, { error: "mustAccept" }),
   personal_data: checkbox.refine(Boolean, { error: "mustAccept" }),
   age: checkbox.refine(Boolean, { error: "mustAccept" }),

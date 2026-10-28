@@ -11,6 +11,7 @@ import { heroFallbackImages } from "@/config/hero";
 import { getI18n } from "@/i18n/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getCategories, getCategoryLabels } from "@/lib/categories";
+import { getProfileTypeLabels } from "@/lib/queries/profile-types";
 import { searchPortfolio, searchProfiles, searchProjects } from "@/lib/queries/search";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,9 +31,10 @@ async function getStats() {
 
 export default async function HomePage() {
   const { t, locale } = await getI18n();
-  const [user, labels, categories, works, popular, members, projects, stats] = await Promise.all([
+  const [user, labels, profileTypeLabels, categories, works, popular, members, projects, stats] = await Promise.all([
     getCurrentUser(),
     getCategoryLabels(locale),
+    getProfileTypeLabels(),
     getCategories(),
     searchPortfolio({ sort: "newest" }, 0, 12),
     searchPortfolio({ sort: "popular" }, 0, 3),
@@ -184,7 +186,7 @@ export default async function HomePage() {
         {shownMembers.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {shownMembers.map((member) => (
-              <ProfileCard key={member.id} profile={member} categoryLabels={labels} t={t} locale={locale} />
+              <ProfileCard key={member.id} profile={member} categoryLabels={labels} profileTypeLabels={profileTypeLabels} t={t} locale={locale} />
             ))}
           </div>
         ) : (

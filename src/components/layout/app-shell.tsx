@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
+import { isAssistantConfigured } from "@/lib/assistant/config";
 import { getCurrentUser, isStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/i18n/server";
@@ -49,6 +51,8 @@ export async function AppShell({ children, footer = true }: { children: React.Re
       <Suspense>
         <FlashToast />
       </Suspense>
+      {/* Ассистент FRAME — только для вошедших и не заблокированных пользователей. */}
+      {user && !user.profile.banned_at ? <AssistantWidget configured={isAssistantConfigured()} /> : null}
     </UnreadCountsProvider>
   );
 }

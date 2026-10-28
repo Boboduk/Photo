@@ -14,17 +14,22 @@ import { Input } from "@/components/ui/input";
 import { brand } from "@/config/brand";
 import { format } from "@/i18n/format";
 import { useT } from "@/i18n/client";
-import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
+import type { ProfileType } from "@/lib/constants";
 import { initialFormState } from "@/lib/errors";
 import { suggestUsername } from "@/lib/translit";
 import { cn } from "@/lib/utils";
 import { PasswordInput } from "./password-input";
 
-const TYPE_ICONS: Record<ProfileType, typeof CameraIcon> = {
+const TYPE_ICONS: Record<string, typeof CameraIcon> = {
   photographer: CameraIcon,
   model: UserIcon,
   both: SparklesIcon,
+  videographer: CameraIcon,
 };
+
+function getTypeIcon(slug: string) {
+  return TYPE_ICONS[slug] ?? UserIcon;
+}
 
 /** Подставляет ссылки в текст согласия: "Я принимаю {terms} и {privacy}". */
 function withLinks(template: string, links: Record<string, React.ReactNode>) {
@@ -34,7 +39,7 @@ function withLinks(template: string, links: Record<string, React.ReactNode>) {
   });
 }
 
-export function RegisterForm() {
+export function RegisterForm({ profileTypes }: { profileTypes: { slug: string; name: string }[] }) {
   const t = useT();
   const [state, action] = useActionState(signUpAction, initialFormState);
   const errors = state.fieldErrors ?? {};
@@ -42,7 +47,7 @@ export function RegisterForm() {
   const [name, setName] = useState(values.display_name ?? "");
   const [username, setUsername] = useState(values.username ?? "");
   const [usernameTouched, setUsernameTouched] = useState(Boolean(values.username));
-  const [type, setType] = useState<ProfileType>((values.profile_type as ProfileType) ?? "photographer");
+  const [type, setType] = useState<ProfileType>((values.profile_type as ProfileType) ?? profileTypes[0]?.slug ?? "photographer");
   const [resending, startResend] = useTransition();
 
   if (state.ok && state.message) {
@@ -86,26 +91,26 @@ export function RegisterForm() {
       <fieldset>
         <legend className="mb-2.5 text-sm font-medium">{t.auth.profileType}</legend>
         <div className="grid grid-cols-3 gap-2">
-          {PROFILE_TYPES.map((value) => {
-            const Icon = TYPE_ICONS[value];
+          {profileTypes.map((pt) => {
+            const Icon = getTypeIcon(pt.slug);
             return (
               <label
-                key={value}
+                key={pt.slug}
                 className={cn(
                   "flex cursor-pointer flex-col items-start gap-3 rounded-xl border p-3.5 text-sm leading-tight font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-foreground",
-                  type === value ? "border-foreground bg-surface" : "border-line-strong hover:border-foreground/50",
+                  type === pt.slug ? "border-foreground bg-surface" : "border-line-strong hover:border-foreground/50",
                 )}
               >
                 <input
                   type="radio"
                   name="profile_type"
-                  value={value}
-                  checked={type === value}
-                  onChange={() => setType(value)}
+                  value={pt.slug}
+                  checked={type === pt.slug}
+                  onChange={() => setType(pt.slug)}
                   className="sr-only"
                 />
                 <Icon className="size-5" />
-                {t.enums.profileType[value]}
+                {pt.name}
               </label>
             );
           })}

@@ -19,7 +19,13 @@ export class UploadError extends Error {
  */
 export async function uploadImage(
   file: File,
-  { bucket, userId, folder, maxSize }: { bucket: Bucket; userId: string; folder: string; maxSize: number },
+  {
+    bucket,
+    userId,
+    folder,
+    maxSize,
+    background,
+  }: { bucket: Bucket; userId: string; folder: string; maxSize: number; background?: string },
 ): Promise<UploadedImage> {
   if (!(ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
     throw new UploadError("wrong_type", file.name);
@@ -31,7 +37,7 @@ export async function uploadImage(
 
   let processed: ProcessedImage;
   try {
-    processed = await prepareImage(file, maxSize);
+    processed = await prepareImage(file, maxSize, undefined, background);
   } catch {
     throw new UploadError("wrong_type", file.name);
   }

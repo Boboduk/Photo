@@ -9,6 +9,7 @@ import {
   MessageCircleIcon,
   SendIcon,
   SettingsIcon,
+  ShirtIcon,
   UserIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +32,7 @@ export function DashboardNav() {
     { href: "/dashboard/messages", label: t.dashboard.nav.messages, icon: MessageCircleIcon, count: counts.messages },
     { href: "/dashboard/favorites", label: t.dashboard.nav.favorites, icon: BookmarkIcon },
     { href: "/dashboard/notifications", label: t.dashboard.nav.notifications, icon: BellIcon, count: counts.notifications },
+    { href: "/dashboard/tryon", label: t.dashboard.nav.tryon, icon: ShirtIcon },
     { href: "/dashboard/settings", label: t.dashboard.nav.settings, icon: SettingsIcon },
   ];
 

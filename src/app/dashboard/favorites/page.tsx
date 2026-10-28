@@ -8,6 +8,7 @@ import { LinkTabs } from "@/components/ui/tabs";
 import { getI18n } from "@/i18n/server";
 import { requireUser } from "@/lib/auth";
 import { getCategoryLabels } from "@/lib/categories";
+import { getProfileTypeLabels } from "@/lib/queries/profile-types";
 import { createClient } from "@/lib/supabase/server";
 import { firstParam } from "@/lib/utils";
 import type { PortfolioCardData, ProfileCardData } from "@/types/views";
@@ -63,7 +64,7 @@ export default async function FavoritesPage(props: PageProps<"/dashboard/favorit
   const tab = firstParam((await props.searchParams).tab);
   const active = tab === "people" || tab === "liked" ? tab : "works";
   const supabase = await createClient();
-  const labels = await getCategoryLabels(locale);
+  const [labels, profileTypeLabels] = await Promise.all([getCategoryLabels(locale), getProfileTypeLabels()]);
 
   const [{ data: savedRows }, { data: likedRows }, { data: peopleRows }] = await Promise.all([
     supabase.from("favorites").select(`item:portfolio_items(${ITEM_FIELDS})`).eq("user_id", user.id).not("item_id", "is", null).order("created_at", { ascending: false }).limit(200),
@@ -129,7 +130,7 @@ export default async function FavoritesPage(props: PageProps<"/dashboard/favorit
         people.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {people.map((profile) => (
-              <ProfileCard key={profile.id} profile={profile} categoryLabels={labels} t={t} locale={locale} />
+              <ProfileCard key={profile.id} profile={profile} categoryLabels={labels} profileTypeLabels={profileTypeLabels} t={t} locale={locale} />
             ))}
           </div>
         ) : (

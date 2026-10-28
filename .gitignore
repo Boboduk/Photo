@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+/.certs/
 
 # debug
 npm-debug.log*
@@ -51,3 +52,6 @@ next-env.d.ts
 # supabase local
 supabase/.branches
 supabase/.temp
+
+# Supabase Studio: сохранённые SQL-запросы (личные, могут содержать данные пользователей)
+supabase/snippets/

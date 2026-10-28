@@ -5,7 +5,6 @@ import {
   AVAILABILITY_STATUSES,
   COLLAB_FORMATS,
   EXPERIENCE_LEVELS,
-  PROFILE_TYPES,
   PROJECT_STATUSES,
   TEAM_ROLES,
   isOneOf,
@@ -16,11 +15,14 @@ import {
   type ProjectStatus,
   type TeamRole,
 } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, type ServerSupabase } from "@/lib/supabase/server";
 import { firstParam, listParam } from "@/lib/utils";
 import type { Paged, PortfolioCardData, ProfileCardData, ProjectCardData } from "@/types/views";
 
 type SearchParams = Record<string, string | string[] | undefined>;
+
+/** Клиент Supabase от имени пользователя: по cookie-сессии (по умолчанию) или по токену MCP. */
+type Db = Pick<ServerSupabase, "rpc">;
 
 function paged<T extends { total_count?: number }>(rows: T[] | null, offset: number, limit: number): Paged<Omit<T, "total_count">> {
   const items = (rows ?? []).map(({ total_count: _total, ...rest }) => rest);
@@ -53,7 +55,7 @@ export function parseProfileFilters(kind: ProfileFilters["kind"], params: Search
     kind,
     q: cleanText(firstParam(params.q)),
     city: cleanText(firstParam(params.city), 80),
-    types: listParam(params.type).filter((v) => isOneOf(PROFILE_TYPES, v)) as ProfileType[],
+    types: listParam(params.type).filter((v) => /^[a-z0-9-]{2,40}$/.test(v)) as ProfileType[],
     specializations: listParam(params.spec).slice(0, 12),
     category: cleanText(firstParam(params.category), 40),
     experience: listParam(params.exp).filter((v) => isOneOf(EXPERIENCE_LEVELS, v)) as ExperienceLevel[],
@@ -67,8 +69,13 @@ export function parseProfileFilters(kind: ProfileFilters["kind"], params: Search
   };
 }
 
-export async function searchProfiles(filters: ProfileFilters, offset = 0, limit = PAGE_SIZE): Promise<Paged<ProfileCardData>> {
-  const supabase = await createClient();
+export async function searchProfiles(
+  filters: ProfileFilters,
+  offset = 0,
+  limit = PAGE_SIZE,
+  db?: Db,
+): Promise<Paged<ProfileCardData>> {
+  const supabase = db ?? (await createClient());
   const { data, error } = await supabase.rpc("search_profiles", {
     p_kind: filters.kind,
     p_query: filters.q,
@@ -107,8 +114,13 @@ export function parsePortfolioFilters(params: SearchParams): PortfolioFilters {
   };
 }
 
-export async function searchPortfolio(filters: PortfolioFilters, offset = 0, limit = PAGE_SIZE): Promise<Paged<PortfolioCardData>> {
-  const supabase = await createClient();
+export async function searchPortfolio(
+  filters: PortfolioFilters,
+  offset = 0,
+  limit = PAGE_SIZE,
+  db?: Db,
+): Promise<Paged<PortfolioCardData>> {
+  const supabase = db ?? (await createClient());
   const { data, error } = await supabase.rpc("search_portfolio", {
     p_query: filters.q,
     p_category: filters.category,
@@ -150,8 +162,13 @@ export function parseProjectFilters(params: SearchParams): ProjectFilters {
   };
 }
 
-export async function searchProjects(filters: ProjectFilters, offset = 0, limit = PAGE_SIZE): Promise<Paged<ProjectCardData>> {
-  const supabase = await createClient();
+export async function searchProjects(
+  filters: ProjectFilters,
+  offset = 0,
+  limit = PAGE_SIZE,
+  db?: Db,
+): Promise<Paged<ProjectCardData>> {
+  const supabase = db ?? (await createClient());
   const { data, error } = await supabase.rpc("search_projects", {
     p_query: filters.q,
     p_city: filters.city,

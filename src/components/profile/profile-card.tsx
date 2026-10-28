@@ -12,11 +12,13 @@ import type { ProfileCardData } from "@/types/views";
 export function ProfileCard({
   profile,
   categoryLabels,
+  profileTypeLabels,
   t,
   locale,
 }: {
   profile: ProfileCardData;
   categoryLabels: Record<string, string>;
+  profileTypeLabels: Record<string, string>;
   t: Dictionary;
   locale: Locale;
 }) {
@@ -70,7 +72,7 @@ export function ProfileCard({
                   <span aria-hidden>·</span>
                 </>
               ) : null}
-              <span className="truncate">{t.enums.profileType[profile.profile_type]}</span>
+              <span className="truncate">{profileTypeLabels[profile.profile_type] ?? profile.profile_type}</span>
             </p>
           </div>
           {profile.availability === "available" ? (

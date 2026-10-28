@@ -45,6 +45,10 @@ export function notificationText(t: Dictionary, n: NotificationRow): string {
         : format(t.notifications.like, { actor, item: data.item_title ?? "" });
     case "mention":
       return format(t.notifications.mention, { actor, item: data.item_title ?? "" });
+    case "tryon_request":
+      return count > 1
+        ? format(t.notifications.tryonRequestMany, { actor, others: count - 1 })
+        : format(t.notifications.tryonRequest, { actor });
     default:
       return "";
   }
@@ -68,6 +72,8 @@ export function notificationHref(n: NotificationRow): string {
     case "like":
     case "mention":
       return data.item_id ? `/portfolio/${data.item_id}` : "/dashboard/portfolio";
+    case "tryon_request":
+      return "/dashboard/tryon?requests=1";
     default:
       return "/dashboard/notifications";
   }

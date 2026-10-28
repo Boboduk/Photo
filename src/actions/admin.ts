@@ -144,3 +144,40 @@ export async function deleteCategoryAction(slug: string): Promise<ActionResult> 
   revalidatePath("/", "layout");
   return { ok: true, message: t.admin.categoryDeleted };
 }
+
+const profileTypeSchema = z.object({
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9-]{2,40}$/),
+  name: z.string().trim().min(1).max(60),
+  name_en: z.string().trim().max(60).optional(),
+  sort_order: z.coerce.number().int().min(0).max(10000),
+  shows_in_photographer_catalog: z.boolean(),
+  shows_in_model_catalog: z.boolean(),
+  is_active: z.boolean(),
+});
+
+export async function saveProfileTypeAction(input: z.input<typeof profileTypeSchema>, isNew: boolean): Promise<ActionResult> {
+  const t = await getT();
+  const ctx = await staff(true);
+  if (!ctx) return { ok: false, error: t.errors.forbidden };
+  const parsed = profileTypeSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: t.validation.invalidValue };
+  const { name_en, ...data } = parsed.data;
+  const row = { ...data, translations: name_en ? { en: name_en } : {} };
+  const { error } = isNew
+    ? await ctx.supabase.from("profile_types").insert(row)
+    : await ctx.supabase.from("profile_types").update(row).eq("slug", data.slug);
+  if (error) return { ok: false, error: errorMessage(t, error) };
+  revalidatePath("/", "layout");
+  return { ok: true, message: t.admin.profileTypeSaved };
+}
+
+export async function deleteProfileTypeAction(slug: string): Promise<ActionResult> {
+  const t = await getT();
+  const ctx = await staff(true);
+  if (!ctx) return { ok: false, error: t.errors.forbidden };
+  if (!/^[a-z0-9-]{2,40}$/.test(slug)) return { ok: false, error: t.validation.invalidValue };
+  const { error } = await ctx.supabase.from("profile_types").delete().eq("slug", slug);
+  if (error) return { ok: false, error: errorMessage(t, error) };
+  revalidatePath("/", "layout");
+  return { ok: true, message: t.admin.profileTypeDeleted };
+}

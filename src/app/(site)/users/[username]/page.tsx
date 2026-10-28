@@ -1,7 +1,8 @@
-import { AtSignIcon, GlobeIcon, ImagesIcon, MailIcon, MapPinIcon, PencilIcon, PhoneIcon, SendIcon } from "lucide-react";
+import { AtSignIcon, GlobeIcon, ImagesIcon, MailIcon, MapPinIcon, PencilIcon, PhoneIcon, SendIcon, ShirtIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { UserBanButton, UserRoleSelect } from "@/components/admin/user-actions";
 import { EmptyState } from "@/components/common/empty-state";
 import { SmartImage } from "@/components/media/smart-image";
 import { PortfolioResults } from "@/components/portfolio/portfolio-results";
@@ -17,7 +18,14 @@ import { getI18n } from "@/i18n/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getCategoryLabels } from "@/lib/categories";
 import { PROJECT_STATUSES, SOCIAL_NETWORKS } from "@/lib/constants";
-import { getCreditedWorks, getProfileByUsername, getProfileDetails, getViewerProfileState } from "@/lib/queries/profiles";
+import { getProfileTypeLabels } from "@/lib/queries/profile-types";
+import {
+  getCreditedWorks,
+  getProfileByUsername,
+  getProfileDetails,
+  getSharedTryOnModelId,
+  getViewerProfileState,
+} from "@/lib/queries/profiles";
 import { searchPortfolio, searchProjects } from "@/lib/queries/search";
 import { socialLabel, socialUrl } from "@/lib/social";
 import { firstParam } from "@/lib/utils";
@@ -37,19 +45,26 @@ export default async function ProfilePage(props: PageProps<"/users/[username]">)
   const { username } = await props.params;
   const searchParams = await props.searchParams;
   const { t, locale } = await getI18n();
-  const [profile, user, labels] = await Promise.all([getProfileByUsername(username), getCurrentUser(), getCategoryLabels(locale)]);
+  const [profile, user, labels, profileTypeLabels] = await Promise.all([
+    getProfileByUsername(username),
+    getCurrentUser(),
+    getCategoryLabels(locale),
+    getProfileTypeLabels(),
+  ]);
   if (!profile) notFound();
 
   const isOwn = user?.id === profile.id;
+  const isAdmin = user?.profile.role === "admin";
   const tab = firstParam(searchParams.tab);
   const activeTab = tab === "projects" || tab === "credited" ? tab : "works";
 
-  const [details, viewer, works, projects, credited] = await Promise.all([
+  const [details, viewer, works, projects, credited, tryOnModelId] = await Promise.all([
     getProfileDetails(profile.id),
     getViewerProfileState(profile.id, user?.id),
     searchPortfolio({ owner: profile.id, sort: "newest" }),
     searchProjects({ author: profile.id, statuses: [...PROJECT_STATUSES], sort: "newest" }),
     getCreditedWorks(profile.id),
+    getSharedTryOnModelId(profile.id, user?.id),
   ]);
 
   const socials = SOCIAL_NETWORKS.flatMap((network) => {
@@ -57,8 +72,11 @@ export default async function ProfilePage(props: PageProps<"/users/[username]">)
     const href = socialUrl(network, raw);
     return href && raw ? [{ network, href, label: socialLabel(network, raw) }] : [];
   });
+  const currentProfileType = { shows_in_model_catalog: profile.profile_type === "model" };
   const specLabel =
-    profile.profile_type === "model" ? t.profile.directions : t.profile.specializations;
+    currentProfileType.shows_in_model_catalog && profile.profile_type !== "both"
+      ? t.profile.directions
+      : t.profile.specializations;
 
   const paramRows = details.params
     ? ([
@@ -95,7 +113,7 @@ export default async function ProfilePage(props: PageProps<"/users/[username]">)
               <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] text-muted">
                 <span>@{profile.username}</span>
                 <span aria-hidden>·</span>
-                <span>{t.enums.profileType[profile.profile_type]}</span>
+                <span>{profileTypeLabels[profile.profile_type] ?? profile.profile_type}</span>
                 {profile.city ? (
                   <>
                     <span aria-hidden>·</span>
@@ -119,6 +137,14 @@ export default async function ProfilePage(props: PageProps<"/users/[username]">)
             ) : (
               <>
                 {!viewer.blocked ? <StartChatButton userId={profile.id} isAuthenticated={Boolean(user)} /> : null}
+                {tryOnModelId ? (
+                  <Button asChild variant="outline">
+                    <Link href={`/dashboard/tryon?model=${tryOnModelId}`}>
+                      <ShirtIcon />
+                      {t.profile.tryOn}
+                    </Link>
+                  </Button>
+                ) : null}
                 <ProfileActions
                   profileId={profile.id}
                   isAuthenticated={Boolean(user)}
@@ -127,6 +153,17 @@ export default async function ProfilePage(props: PageProps<"/users/[username]">)
                 />
               </>
             )}
+            {isAdmin && !isOwn ? (
+              <>
+                <UserRoleSelect userId={profile.id} role={profile.role} />
+                <UserBanButton
+                  userId={profile.id}
+                  name={profile.display_name}
+                  banned={Boolean(profile.banned_at)}
+                  disabled={profile.role === "admin"}
+                />
+              </>
+            ) : null}
           </div>
         </div>
 

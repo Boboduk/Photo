@@ -12,7 +12,7 @@ if (existsSync(".env.local")) {
 }
 
 export const env = {
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost:54321",
   anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
   serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   mailUrl: process.env.MAILPIT_URL ?? "http://127.0.0.1:54324",

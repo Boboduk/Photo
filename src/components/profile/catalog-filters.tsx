@@ -12,7 +12,6 @@ import {
   AVAILABILITY_STATUSES,
   COLLAB_FORMATS,
   EXPERIENCE_LEVELS,
-  type ProfileType,
 } from "@/lib/constants";
 import type { ProfileFilters } from "@/lib/queries/search";
 import { cn } from "@/lib/utils";
@@ -23,6 +22,7 @@ export function CatalogFilters({
   action,
   kind,
   filters,
+  typeOptions,
   specializationOptions,
   categoryOptions,
   activeCount,
@@ -31,6 +31,7 @@ export function CatalogFilters({
   action: string;
   kind: "photographer" | "model";
   filters: ProfileFilters;
+  typeOptions: Option[];
   specializationOptions: Option[];
   categoryOptions: Option[];
   activeCount: number;
@@ -38,7 +39,6 @@ export function CatalogFilters({
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const typeOptions: ProfileType[] = kind === "photographer" ? ["photographer", "both"] : ["model", "both"];
 
   // Фильтры применяются сразу при изменении — без лишних нажатий.
   const autoSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -106,13 +106,13 @@ export function CatalogFilters({
           </FilterGroup>
 
           <FilterGroup title={t.catalog.type}>
-            {typeOptions.map((type) => (
+            {typeOptions.map((option) => (
               <CheckOption
-                key={type}
+                key={option.value}
                 name="type"
-                value={type}
-                label={t.enums.profileType[type]}
-                checked={filters.types.includes(type)}
+                value={option.value}
+                label={option.label}
+                checked={filters.types.includes(option.value)}
               />
             ))}
           </FilterGroup>

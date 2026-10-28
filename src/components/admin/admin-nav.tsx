@@ -1,6 +1,6 @@
 "use client";
 
-import { FlagIcon, FolderTreeIcon, LayoutGridIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
+import { FlagIcon, FolderTreeIcon, LayoutGridIcon, ShieldCheckIcon, TagsIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/i18n/client";
@@ -15,6 +15,7 @@ export function AdminNav({ isAdmin, openReports }: { isAdmin: boolean; openRepor
     { href: "/admin/reports", label: t.admin.nav.reports, icon: FlagIcon, count: openReports },
     { href: "/admin/content", label: t.admin.nav.content, icon: ShieldCheckIcon },
     ...(isAdmin ? [{ href: "/admin/categories", label: t.admin.nav.categories, icon: FolderTreeIcon }] : []),
+    ...(isAdmin ? [{ href: "/admin/profile-types", label: t.admin.nav.profileTypes, icon: TagsIcon }] : []),
   ];
   return (
     <nav aria-label={t.admin.title} className="lg:w-56 lg:shrink-0">

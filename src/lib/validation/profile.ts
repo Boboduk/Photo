@@ -4,7 +4,6 @@ import {
   COLLAB_FORMATS,
   CONTACTS_VISIBILITY,
   EXPERIENCE_LEVELS,
-  PROFILE_TYPES,
   SOCIAL_NETWORKS,
 } from "@/lib/constants";
 import { socialUrl } from "@/lib/social";
@@ -38,7 +37,7 @@ export const profileSchema = z.object({
   username,
   city: optionalText(80),
   bio: optionalText(1000),
-  profile_type: z.enum(PROFILE_TYPES),
+  profile_type: z.string().trim().regex(/^[a-z0-9-]{2,40}$/),
   specializations: z.array(z.string().max(40)).max(12, { error: "tooMany" }),
   experience: optionalEnum(EXPERIENCE_LEVELS),
   availability: z.enum(AVAILABILITY_STATUSES),

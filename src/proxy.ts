@@ -7,7 +7,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Всё, кроме статики, оптимизированных изображений и файлов с расширением.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)",
+    // Всё, кроме статики, оптимизированных изображений, файлов с расширением и MCP-сервера
+    // (он авторизуется токеном из заголовка, cookie-сессия ему не нужна).
+    "/((?!_next/static|_next/image|favicon.ico|api/mcp|\\.well-known/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)",
   ],
 };

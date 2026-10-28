@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getI18n } from "@/i18n/server";
 import { requireUser } from "@/lib/auth";
 import { categoryName, getCategories } from "@/lib/categories";
+import { getProfileTypes } from "@/lib/queries/profile-types";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,9 +19,10 @@ export default async function DashboardProfilePage() {
   const user = await requireUser("/dashboard/profile");
   const { t, locale } = await getI18n();
   const supabase = await createClient();
-  const [{ data: privateData }, categories] = await Promise.all([
+  const [{ data: privateData }, categories, profileTypes] = await Promise.all([
     supabase.from("profile_private").select("*").eq("id", user.id).maybeSingle(),
     getCategories(),
+    getProfileTypes(),
   ]);
 
   return (
@@ -56,6 +58,12 @@ export default async function DashboardProfilePage() {
             for_photographers: c.for_photographers,
             for_models: c.for_models,
           }))}
+        profileTypes={profileTypes.map((pt) => ({
+          slug: pt.slug,
+          name: pt.name,
+          shows_in_photographer_catalog: pt.shows_in_photographer_catalog,
+          shows_in_model_catalog: pt.shows_in_model_catalog,
+        }))}
       />
     </div>
   );
